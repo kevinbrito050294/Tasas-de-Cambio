@@ -83,24 +83,25 @@
 
   <script>
     let usdtArs = 0;
+    let usdtUsd = 0;
 
     async function actualizar() {
       try {
-        // Precio USDT ≈ USD
+        // Obtener USDT ≈ USD
         const resUsd = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTBUSD");
         const dataUsd = await resUsd.json();
-        const usdtUsd = parseFloat(dataUsd.price);
+        usdtUsd = parseFloat(dataUsd.price);
 
-        // Precio USDT en ARS
+        // Obtener USDT → ARS
         const resArs = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTARS");
         const dataArs = await resArs.json();
         usdtArs = parseFloat(dataArs.price);
 
-        // Mostrar valores
+        // Mostrar valores en la página
         document.getElementById("usd").textContent = `$${usdtUsd.toFixed(3)} USD`;
         document.getElementById("ars").textContent = `$${usdtArs.toFixed(2)} ARS`;
 
-        // Mostrar hora de actualización
+        // Hora de actualización
         const hora = new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
         document.getElementById("time").textContent = `Última actualización: ${hora}`;
       } catch (e) {
@@ -130,12 +131,9 @@
       }
     }
 
-    // Inicializa y actualiza cada 5 min
+    // Inicializar y actualizar cada 5 minutos
     actualizar();
     setInterval(actualizar, 300000);
   </script>
 </body>
 </html>
-
-
-
