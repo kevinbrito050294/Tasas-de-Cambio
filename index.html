@@ -41,18 +41,18 @@
     <h1>💰 Valor del USDT (Binance)</h1>
     <div id="usd" class="price">Cargando...</div>
     <div id="ars" class="price"></div>
-    <div class="sub">Fuente: Binance Spot API</div>
+    <div class="sub" id="time"></div>
   </div>
 
   <script>
     async function actualizar() {
       try {
-        // USDT/USD
-        const resUsd = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTUSD");
+        // ✅ Par alternativo (Binance no tiene USDTUSD)
+        const resUsd = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BUSDUSDT");
         const dataUsd = await resUsd.json();
         const usdtUsd = parseFloat(dataUsd.price);
 
-        // USDT/ARS (spot real de Binance Argentina)
+        // ✅ Precio real USDTARS (existe en Binance)
         const resArs = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTARS");
         const dataArs = await resArs.json();
         const usdtArs = parseFloat(dataArs.price);
@@ -61,15 +61,19 @@
         document.getElementById("usd").textContent = `$${usdtUsd.toFixed(3)} USD`;
         document.getElementById("ars").textContent = `$${usdtArs.toFixed(2)} ARS`;
 
+        // Mostrar hora actual
+        const hora = new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+        document.getElementById("time").textContent = `Última actualización: ${hora}`;
       } catch (e) {
-        document.getElementById("usd").textContent = "Error al cargar";
-        console.error(e);
+        document.getElementById("usd").textContent = "Error al cargar datos";
+        console.error("Error:", e);
       }
     }
 
     actualizar();
-    setInterval(actualizar, 300000); // Actualiza cada 5 minutos
+    setInterval(actualizar, 300000); // cada 5 min
   </script>
 </body>
 </html>
+
 
