@@ -34,6 +34,32 @@
       font-size: 0.85em;
       color: #aaa;
     }
+    input {
+      padding:8px;
+      width:70%;
+      border-radius:8px;
+      border:none;
+      margin-bottom:10px;
+    }
+    button {
+      padding:8px 16px;
+      border:none;
+      border-radius:8px;
+      background:#f3ba2f;
+      color:#111;
+      cursor:pointer;
+      font-weight:600;
+      margin:5px;
+    }
+    #resultado {
+      margin-top:12px;
+      font-size:1.2em;
+      font-weight:700;
+    }
+    hr {
+      margin:20px 0;
+      border-color:#333;
+    }
   </style>
 </head>
 <body>
@@ -42,38 +68,74 @@
     <div id="usd" class="price">Cargando...</div>
     <div id="ars" class="price"></div>
     <div class="sub" id="time"></div>
+
+    <hr>
+
+    <h2>💱 Calculadora de conversión</h2>
+    <input type="number" id="cantidadUSDT" placeholder="Cantidad en USDT">
+    <button onclick="convertir('USDT')">Convertir a ARS</button>
+    <br>
+    <input type="number" id="cantidadARS" placeholder="Cantidad en ARS">
+    <button onclick="convertir('ARS')">Convertir a USDT</button>
+
+    <div id="resultado"></div>
   </div>
 
   <script>
+    let usdtArs = 0;
+
     async function actualizar() {
       try {
-        // ✅ Par alternativo (Binance no tiene USDTUSD)
-        const resUsd = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BUSDUSDT");
+        // Precio USDT ≈ USD
+        const resUsd = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTBUSD");
         const dataUsd = await resUsd.json();
         const usdtUsd = parseFloat(dataUsd.price);
 
-        // ✅ Precio real USDTARS (existe en Binance)
+        // Precio USDT en ARS
         const resArs = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTARS");
         const dataArs = await resArs.json();
-        const usdtArs = parseFloat(dataArs.price);
+        usdtArs = parseFloat(dataArs.price);
 
-        // Mostrar resultados
+        // Mostrar valores
         document.getElementById("usd").textContent = `$${usdtUsd.toFixed(3)} USD`;
         document.getElementById("ars").textContent = `$${usdtArs.toFixed(2)} ARS`;
 
-        // Mostrar hora actual
+        // Mostrar hora de actualización
         const hora = new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
         document.getElementById("time").textContent = `Última actualización: ${hora}`;
       } catch (e) {
         document.getElementById("usd").textContent = "Error al cargar datos";
+        document.getElementById("ars").textContent = "";
         console.error("Error:", e);
       }
     }
 
+    function convertir(tipo) {
+      if (tipo === 'USDT') {
+        const cantidad = parseFloat(document.getElementById("cantidadUSDT").value);
+        if (!isNaN(cantidad)) {
+          const total = cantidad * usdtArs;
+          document.getElementById("resultado").textContent = `${cantidad} USDT ≈ $${total.toFixed(2)} ARS`;
+        } else {
+          document.getElementById("resultado").textContent = "Ingresa un número válido";
+        }
+      } else if (tipo === 'ARS') {
+        const cantidad = parseFloat(document.getElementById("cantidadARS").value);
+        if (!isNaN(cantidad)) {
+          const total = cantidad / usdtArs;
+          document.getElementById("resultado").textContent = `$${cantidad} ARS ≈ ${total.toFixed(3)} USDT`;
+        } else {
+          document.getElementById("resultado").textContent = "Ingresa un número válido";
+        }
+      }
+    }
+
+    // Inicializa y actualiza cada 5 min
     actualizar();
-    setInterval(actualizar, 300000); // cada 5 min
+    setInterval(actualizar, 300000);
   </script>
 </body>
 </html>
+
 
 
