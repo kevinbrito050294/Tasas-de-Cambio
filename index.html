@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Precio USDT Binance USD / ARS</title>
+  <style>
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      background: #0b0b0b;
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+    .card {
+      display: inline-block;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 20px 40px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+      max-width: 360px;
+      background: #111;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Precio USDT Binance USD / ARS</title>
+  <style>
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      background: #0b0b0b;
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+    .card {
+      display: inline-block;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 20px 40px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+      max-width: 360px;
+      background: #111;
+    }
+    h1 {
+      font-size: 1.4em;
+      margin-bottom: 24px;
+      color: #f3ba2f;
+    }
+    .price {
+      font-size: 2em;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+    .sub {
+      font-size: 0.85em;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>💰 Valor del USDT (Binance)</h1>
+    <div id="usd" class="price">Cargando...</div>
+    <div id="ars" class="price"></div>
+    <div class="sub">Fuente: Binance API + Binance Argentina</div>
+  </div>
+
+  <script>
+    async function actualizar() {
+      try {
+        // Precio USDT-USD desde Binance
+        const resUsd = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTUSD");
+        const dataUsd = await resUsd.json();
+        const usdtUsd = parseFloat(dataUsd.price);
+
+        // Precio USDT-ARS desde la página de Binance (convertido a JSON)
+        // Binance no tiene API pública directa para ARS, así que usamos un servicio auxiliar:
+        const resArs = await fetch("https://api.exchangerate.host/convert?from=USD&to=ARS");
+        const dataArs = await resArs.json();
+        const usdToArs = dataArs.info.rate;
+        const usdtArs = usdtUsd * usdToArs;
+
+        // Mostrar resultados
+        document.getElementById("usd").textContent = `$${usdtUsd.toFixed(3)} USD`;
+        document.getElementById("ars").textContent = `$${usdtArs.toFixed(2)} ARS`;
+
+      } catch (e) {
+        document.getElementById("usd").textContent = "Error al cargar";
+        console.error(e);
+      }
+    }
+
+    actualizar();
+    setInterval(actualizar, 300000); // Actualiza cada 5 minutos
+  </script>
+</body>
+</html>
