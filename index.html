@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>USDT Binance (USD / ARS)</title>
+  <title>USDT ↔ ARS Widget</title>
   <style>
     body {
       font-family: "Inter", Arial, sans-serif;
@@ -34,44 +34,93 @@
       font-size: 0.85em;
       color: #aaa;
     }
+    input {
+      width: 120px;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      text-align: right;
+      margin: 5px;
+      font-size: 1em;
+    }
+    .calc-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+    span {
+      font-size: 1em;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>💰 Valor del USDT (Binance)</h1>
+    <h1>💰 USDT ↔ ARS (Binance)</h1>
     <div id="usd" class="price">Cargando...</div>
     <div id="ars" class="price"></div>
     <div class="sub" id="time"></div>
+
+    <hr style="margin:20px 0; border-color:#333;">
+
+    <h2>Calculadora</h2>
+
+    <div class="calc-row">
+      <input id="inputUsdt" placeholder="USDT">
+      <span>=</span>
+      <input id="outputArs" placeholder="ARS" readonly>
+    </div>
+
+    <div class="calc-row">
+      <input id="inputArs" placeholder="ARS">
+      <span>=</span>
+      <input id="outputUsdt" placeholder="USDT" readonly>
+    </div>
   </div>
 
-  <script>
-    async function actualizar() {
-      try {
-        // ✅ Par alternativo (Binance no tiene USDTUSD)
-        const resUsd = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BUSDUSDT");
-        const dataUsd = await resUsd.json();
-        const usdtUsd = parseFloat(dataUsd.price);
+<script>
+let usdtArs = 0;
 
-        // ✅ Precio real USDTARS (existe en Binance)
-        const resArs = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTARS");
-        const dataArs = await resArs.json();
-        const usdtArs = parseFloat(dataArs.price);
+async function actualizar() {
+  try {
+    const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDTARS");
+    const data = await res.json();
+    usdtArs = parseFloat(data.price);
 
-        // Mostrar resultados
-        document.getElementById("usd").textContent = `$${usdtUsd.toFixed(3)} USD`;
-        document.getElementById("ars").textContent = `$${usdtArs.toFixed(2)} ARS`;
+    document.getElementById("usd").textContent = `$1 USD`;
+    document.getElementById("ars").textContent = `$${usdtArs.toFixed(2)} ARS`;
 
-        // Mostrar hora actual
-        const hora = new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-        document.getElementById("time").textContent = `Última actualización: ${hora}`;
-      } catch (e) {
-        document.getElementById("usd").textContent = "Error al cargar datos";
-        console.error("Error:", e);
-      }
-    }
+    const hora = new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("time").textContent = `Última actualización: ${hora}`;
 
-    actualizar();
-    setInterval(actualizar, 300000); // cada 5 min
-  </script>
+    actualizarCalculadora();
+  } catch (e) {
+    document.getElementById("usd").textContent = "Error al cargar datos";
+    console.error(e);
+  }
+}
+
+function actualizarCalculadora() {
+  const inputUsdt = document.getElementById("inputUsdt");
+  const outputArs = document.getElementById("outputArs");
+  const inputArs = document.getElementById("inputArs");
+  const outputUsdt = document.getElementById("outputUsdt");
+
+  let usdt = parseFloat(inputUsdt.value.replace(",", ".")) || 0;
+  let ars = parseFloat(inputArs.value.replace(",", ".")) || 0;
+
+  outputArs.value = (usdt * usdtArs).toFixed(2);
+  outputUsdt.value = (ars / usdtArs).toFixed(3);
+}
+
+// Listeners que permiten escribir cualquier número con . o ,
+document.getElementById("inputUsdt").addEventListener("input", actualizarCalculadora);
+document.getElementById("inputArs").addEventListener("input", actualizarCalculadora);
+
+actualizar();
+setInterval(actualizar, 300000);
+</script>
 </body>
 </html>
